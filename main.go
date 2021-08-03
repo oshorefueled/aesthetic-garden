@@ -28,6 +28,8 @@ func groupIsAesthetic(group []int) bool {
 	return false
 }
 
+// deleteAndAppend deletes an element with the index indexToDelete from a slice treeGroup and
+// appends a value toAppend to the end of the slice. It then returns the new slice.
 func deleteAndAppend(treeGroup []int, indexToDelete, toAppend int) []int {
 	t := make([]int, 0)
 	t = append(t, treeGroup[:indexToDelete]...)
@@ -36,6 +38,9 @@ func deleteAndAppend(treeGroup []int, indexToDelete, toAppend int) []int {
 	return t
 }
 
+// possibleWays returns the number of ways one tree can be cut from a group of 3 trees to make
+// them aesthetically pleasing. It checks for aesthetic possibility by adding the first tree
+// from the next group of trees after removing one tree.
 func possibleWays(group []int, treeAfter int) (ways int, treeToCut int) {
 	checkAndUpdateWays := func(treeIndex int) {
 		if groupIsAesthetic(deleteAndAppend(group, treeIndex, treeAfter)) {
@@ -48,20 +53,17 @@ func possibleWays(group []int, treeAfter int) (ways int, treeToCut int) {
 		checkAndUpdateWays(k)
 	}
 
-	// if there are no ways to resolve aesthetic issue return -1
-	if ways == 0 {
-		ways = canNotBeAesthetic
-	}
-
 	return
 }
 
-func treeCanBeGrouped(trees []int, indexOfFirstTreeInGroup int) ([]int, bool) {
-	if len(trees)-(indexOfFirstTreeInGroup+3) > -1 {
-		return trees[indexOfFirstTreeInGroup : indexOfFirstTreeInGroup+3], true
+// groupTrees returns a group of 3 trees from a slice trees starting from an index
+// indexOfFirstTreeInGroup
+func groupTrees(trees []int, firstTreeIndex int) []int {
+	if len(trees)-(firstTreeIndex+3) > -1 {
+		return trees[firstTreeIndex : firstTreeIndex+3]
 	}
 
-	return []int{}, false
+	return []int{}
 }
 
 func cutDownTree(trees []int, treeIndex int) []int {
@@ -73,19 +75,20 @@ func Solution(A []int) int {
 
 loop:
 	for i := 0; i < len(A); i++ {
-		if groupedTrees, canGroup := treeCanBeGrouped(A, i); canGroup {
+		if groupedTrees := groupTrees(A, i); len(groupedTrees) == 3 {
 			if groupIsAesthetic(groupedTrees) {
 				continue
 			}
 
 			// ways > 0 means a tree has already been cut down
-			// only one tree can be cut down to achieve aesthetic desire, return -1
+			// only one tree can be legally cut down to achieve aesthetic desire, return -1
 			if ways > 0 {
 				return canNotBeAesthetic
 			}
 
 			w, toCut := possibleWays(groupedTrees, A[i+3])
-			if w == -1 {
+			if w == 0 {
+				// if there are no ways to resolve aesthetic issue return -1
 				return canNotBeAesthetic
 			}
 
@@ -99,5 +102,5 @@ loop:
 }
 
 func main() {
-	fmt.Println(Solution([]int{1, 4, 4, 1, 9, 9}))
+	fmt.Println(Solution([]int{3, 4, 5, 3, 7})) // print 3
 }
